@@ -25,25 +25,30 @@ public class StateGame extends State{
     public class ShapeActor extends Actor {
         float x, y = 0;
         float width, height = 0;
+        public Cell cell;
         Cell.CellType color;
         public boolean started = false;
         ShapeRenderer renderer = parent.getShapeRenderer();
 
         // TODO: fix touch bounds for each block
-        public ShapeActor(float x, float y, Cell.CellType type) {
+        public ShapeActor(float x, float y, Cell.CellType type, Cell cell) {
             this.x = x;
             this.y = y;
             height = 30;
             width = 30;
             color = type;
+            this.cell = cell;
             setBounds(x, y, width, height);
             addListener(new InputListener(){
                 public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                     ((ShapeActor)event.getTarget()).started = true;
+                    ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.FLASHING);
+
                     return true;
                 }
                 public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                     ((ShapeActor)event.getTarget()).started = false;
+                    ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.IDLE);
                 }
             });
         }
@@ -53,6 +58,7 @@ public class StateGame extends State{
             renderer.begin(ShapeRenderer.ShapeType.Filled);
             Color c = Color.PURPLE;
             int radius = (int)height;
+            color = cell.getType();
             if (color  == Cell.CellType.BLUE) {
                 c = Color.BLUE;
             }
@@ -147,7 +153,7 @@ public class StateGame extends State{
                     renderer.circle(x * 70 + tempSpacing - 240, y * 80 + tempSpacing - 200, radius);
                     renderer.end();
                     */
-                    ShapeActor s = new ShapeActor(x * 70 + 300, y * 70 + 1000, grid.getCell(x,y).getType());
+                    ShapeActor s = new ShapeActor(x * 70 + 300, y * 70 + 1000, grid.getCell(x,y).getType(), grid.getCell(x,y));
                     s.setTouchable(Touchable.enabled);
                     parent.getStage().addActor(s);
                     //s.draw();

@@ -1,5 +1,8 @@
 package com.mygdx.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Andrew Frolkin on 31/10/2014.
  * the class representing a cell in the grid
@@ -9,7 +12,11 @@ public class Cell {
     private int x;
     private int y;
     // The type of cell
-    public CellType cellType;
+    private CellType cellType;
+
+    private CellState cellState;
+
+    private List<Cell> neighbours;
 
     public static enum CellType {
         BLUE,
@@ -19,10 +26,18 @@ public class Cell {
         EMPTY,
     }
 
+    public static enum CellState {
+        IDLE,
+        HELD,
+        FLASHING
+    }
+
     public Cell(int x, int y, CellType type) {
         this.x = x;
         this.y = y;
         this.cellType = type;
+        cellState = CellState.IDLE;
+        neighbours = new ArrayList<Cell>();
     }
 
     public int getX() {
@@ -39,6 +54,19 @@ public class Cell {
 
     public boolean isEmpty() {
         return cellType == CellType.EMPTY;
+    }
+
+    public void addNeighbour(Cell cell) {
+        neighbours.add(cell);
+    }
+
+    public void notifyNeighbours(CellState state) {
+        for (Cell c : neighbours) {
+            c.setState(state);
+
+            // change this
+            c.setColor(cellType);
+        }
     }
 
     public void debugPrint() {
@@ -63,5 +91,13 @@ public class Cell {
         }
 
         System.out.print(printText);
+    }
+
+    public void setState(CellState state) {
+        cellState = state;
+    }
+
+    public void setColor(CellType type) {
+        cellType = type;
     }
 }

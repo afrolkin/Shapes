@@ -9,13 +9,16 @@ public class Grid {
     private Cell[][] cells;
 
     // TODO: Singleton pattern?
+    // TODO: instatiate height/width in constructor/ custom height/width
+    private int height = 8;
+    private int width = 8;
     public Grid() {
-        cells = new Cell[8][8];
+        cells = new Cell[height][width];
     }
 
     public void generate() {
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < height; x++) {
+            for (int y = 0; y < width; y++) {
                 // TODO: fix randomization
                 Random rn = new Random();
                 Cell.CellType type = Cell.CellType.RED;
@@ -36,14 +39,37 @@ public class Grid {
                 cells[x][y] = new Cell(x, y, type);
             }
         }
+
+        initNeighbours();
+    }
+
+    private void initNeighbours() {
+        for (int x = 0; x < height; x++) {
+            for (int y = 0; y < width; y++) {
+                Cell c = getCell(x, y);
+                // also check if -1
+                if (x+1 <= width -1 && y <= height - 1 && x+1 >= 0 && y >= 0) {
+                    c.addNeighbour(getCell(x+1, y));
+                }
+                if (x <= width -1&& y - 1 <= height - 1 && x >= 0 && y-1 >= 0) {
+                    c.addNeighbour(getCell(x, y-1));
+                }
+                if (x-1 <= width -1&& y <= height -1&& x-1 >= 0 && y >= 0) {
+                    c.addNeighbour(getCell(x-1, y));
+                }
+                if (x <= width -1&& y + 1 <= height -1&& x >= 0 && y+1 >= 0) {
+                    c.addNeighbour(getCell(x, y+1));
+                }
+            }
+        }
     }
 
     public void debugDraw() {
         if (cells[1][1] != null) {
             System.out.println("DEBUG GRID");
-            for (int x = 0; x < 8; x++) {
+            for (int x = 0; x < height; x++) {
                 System.out.print(x + " ");
-                for (int y = 0; y < 8; y++) {
+                for (int y = 0; y < width; y++) {
                     cells[x][y].debugPrint();
                     System.out.print(" ");
                 }
