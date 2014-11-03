@@ -12,6 +12,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 // TODO: resolution independence
 public class Shapes implements ApplicationListener {
@@ -30,7 +33,8 @@ public class Shapes implements ApplicationListener {
 
     // Camera
     private OrthographicCamera camera;
-    private Rectangle viewPort;
+    private Viewport viewPort;
+    private Stage stage;
 
     // shape renderer
     private ShapeRenderer renderer;
@@ -44,10 +48,12 @@ public class Shapes implements ApplicationListener {
         renderer = new ShapeRenderer();
 		img = new Texture("badlogic.jpg");
 
-        assetManager = new AssetManager();
-        camera = new OrthographicCamera(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
-        game = new StateGame(this);
 
+        camera = new OrthographicCamera(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        assetManager = new AssetManager();
+
+
+        //game.create();
 
 	}
 
@@ -55,9 +61,10 @@ public class Shapes implements ApplicationListener {
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0, 0);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stage.draw();
         camera.update();
 
-        Gdx.gl.glViewport((int)viewPort.getX(), (int)viewPort.getY(), (int) viewPort.getWidth(), (int) viewPort.getHeight());
+        Gdx.gl.glViewport((int) viewPort.getScreenX(), (int) viewPort.getScreenY(), (int) viewPort.getScreenWidth(), (int) viewPort.getScreenHeight());
         renderer.setProjectionMatrix(camera.combined);
 
 
@@ -88,7 +95,7 @@ public class Shapes implements ApplicationListener {
 
     @Override
     public void dispose() {
-
+        stage.dispose();
     }
 
     public AssetManager getAssetManager() {
@@ -118,7 +125,16 @@ public class Shapes implements ApplicationListener {
 
         float w = (float)VIRTUAL_WIDTH * scale;
         float h = (float)VIRTUAL_HEIGHT * scale;
-        viewPort = new Rectangle(crop.x, crop.y, w, h);
+        //viewPort = new Rectangle(crop.x, crop.y, w, h);
+        viewPort = new ScreenViewport(camera);
+
+        //viewPort.setCamera(camera);
+        viewPort.setScreenBounds((int) crop.x, (int) crop.y, (int) w, (int) h);
+        stage = new Stage(viewPort);
+
+        game = new StateGame(this);
+        Gdx.input.setInputProcessor(stage);
+
     }
 
     public SpriteBatch getSpriteBatch() {
@@ -128,5 +144,7 @@ public class Shapes implements ApplicationListener {
     public ShapeRenderer getShapeRenderer() {
         return renderer;
     }
+
+    public Stage getStage() { return stage; }
 }
 
