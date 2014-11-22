@@ -43,6 +43,34 @@ public class Grid {
         initNeighbours();
     }
 
+    public void regenerate() {
+        for (int x = 0; x < height; x++) {
+            for (int y = 0; y < width; y++) {
+                // TODO: fix randomization
+                Random rn = new Random();
+                Cell.CellType type = Cell.CellType.RED;
+                int n = rn.nextInt(4000);
+                if (n < 1000){
+                    type = Cell.CellType.BLUE;
+                }
+                else if (n <  2000) {
+                    type = Cell.CellType.GREEN;
+                }
+                else if (n < 3000) {
+                    type = Cell.CellType.RED;
+                }
+                else if (n < 4000) {
+                    type = Cell.CellType.YELLOW;
+                }
+
+                cells[x][y].setColor(type);
+                cells[x][y].setState(Cell.CellState.IDLE);
+                cells[x][y].clearNeighbours();
+            }
+        }
+        initNeighbours();
+    }
+
     private void initNeighbours() {
         for (int x = 0; x < height; x++) {
             for (int y = 0; y < width; y++) {

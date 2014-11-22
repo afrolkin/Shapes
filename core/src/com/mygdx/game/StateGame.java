@@ -14,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
  * main game class
  */
 public class StateGame extends State{
+    private static final float mHeight = 50;
+    private static final float mWidth = 50;
 
     public enum State {
         LOADING,
@@ -22,9 +24,47 @@ public class StateGame extends State{
         SELECTED_CELL
     };
 
+    public class RestartActor extends Actor {
+        float x, y = 0;
+        float width = mWidth;
+        float height = mHeight;
+        Cell.CellType color;
+        public boolean started = false;
+        ShapeRenderer renderer = parent.getShapeRenderer();
+
+        public RestartActor(float x, float y) {
+            this.x = x;
+            this.y = y;
+            height = 30;
+            width = 30;
+            color = Cell.CellType.EMPTY;
+            setBounds(x - width, y - width, 2 * width, 2 * height);
+            addListener(new InputListener(){
+                public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                    return true;
+                }
+                public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                    grid.regenerate();
+                }
+            });
+        }
+
+        @Override
+        public void draw(Batch batch, float alpha) {
+            renderer.begin(ShapeRenderer.ShapeType.Filled);
+            Color c = ShapesColor.TEMP_CLEAR;
+            int radius = (int)height;
+            renderer.setColor(c);
+            // fix this
+            renderer.circle(x, y, radius);
+            renderer.end();
+        }
+    }
+
     public class ShapeActor extends Actor {
         float x, y = 0;
-        float width, height = 0;
+        float width = mWidth;
+        float height = mHeight;
         public Cell cell;
         Cell.CellType color;
         public boolean started = false;
@@ -38,17 +78,19 @@ public class StateGame extends State{
             width = 30;
             color = type;
             this.cell = cell;
-            setBounds(x, y, width, height);
+            setBounds(x - width, y - width, 2 * width, 2 * height);
             addListener(new InputListener(){
                 public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                     ((ShapeActor)event.getTarget()).started = true;
                     ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.FLASHING);
+                    System.out.println(" hi");
 
                     return true;
                 }
                 public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                     ((ShapeActor)event.getTarget()).started = false;
                     ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.IDLE);
+                    ((ShapeActor)event.getTarget()).cell.clear();
                 }
             });
         }
@@ -60,29 +102,28 @@ public class StateGame extends State{
             int radius = (int)height;
             color = cell.getType();
             if (color  == Cell.CellType.BLUE) {
-                c = Color.BLUE;
-            }
-            else if (color == Cell.CellType.RED) {
-                c = Color.RED;
-            }
-            else if (color == Cell.CellType.YELLOW) {
-                c = Color.YELLOW;
-            }
-            else if (color == Cell.CellType.GREEN) {
-                c = Color.GREEN;
+                c = ShapesColor.BLUE;
+            } else if (color == Cell.CellType.RED) {
+                c = ShapesColor.RED;
+            } else if (color == Cell.CellType.YELLOW) {
+                c = ShapesColor.YELLOW;
+            } else if (color == Cell.CellType.GREEN) {
+                c = ShapesColor.GREEN;
+            } else if (color == Cell.CellType.EMPTY) {
+                c = ShapesColor.TEMP_CLEAR;
             }
             renderer.setColor(c);
             // fix this
             renderer.circle(x, y, radius);
             renderer.end();
-       }
+        }
 
         @Override
         public void act(float delta) {
             if(started) {
-                height = 50;
+                height = mHeight + 20;
             } else {
-                height = 30;
+                height = mHeight;
             }
         }
     }
@@ -126,8 +167,12 @@ public class StateGame extends State{
         SpriteBatch batch = parent.getSpriteBatch();
         ShapeRenderer renderer = parent.getShapeRenderer();
 
+        RestartActor restart = new RestartActor(900, 1800);
+        restart.setTouchable(Touchable.enabled);
+        parent.getStage().addActor(restart);
+
         // TODO: make this dynamic or something
-        int tempSpacing = 20;
+        int tempSpacing = 120;
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 if (grid.getCell(x,y) != null) {
@@ -153,7 +198,7 @@ public class StateGame extends State{
                     renderer.circle(x * 70 + tempSpacing - 240, y * 80 + tempSpacing - 200, radius);
                     renderer.end();
                     */
-                    ShapeActor s = new ShapeActor(x * 70 + 300, y * 70 + 1000, grid.getCell(x,y).getType(), grid.getCell(x,y));
+                    ShapeActor s = new ShapeActor(x * tempSpacing + 200, y * tempSpacing + 700, grid.getCell(x,y).getType(), grid.getCell(x,y));
                     s.setTouchable(Touchable.enabled);
                     parent.getStage().addActor(s);
                     //s.draw();

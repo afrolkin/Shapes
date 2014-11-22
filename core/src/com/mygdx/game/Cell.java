@@ -28,7 +28,7 @@ public class Cell {
 
     public static enum CellState {
         IDLE,
-        HELD,
+        CLEARING,
         FLASHING
     }
 
@@ -52,6 +52,8 @@ public class Cell {
         return cellType;
     }
 
+    public CellState getState() { return cellState; }
+
     public boolean isEmpty() {
         return cellType == CellType.EMPTY;
     }
@@ -61,12 +63,28 @@ public class Cell {
     }
 
     public void notifyNeighbours(CellState state) {
+
         for (Cell c : neighbours) {
             c.setState(state);
 
             // change this
             c.setColor(cellType);
         }
+    }
+
+    public void clearNeighbours() {
+        neighbours.clear();
+    }
+
+    // "clears" this cell and it's neighbours
+    public void clear() {
+        setState(CellState.CLEARING);
+        for (Cell c : neighbours) {
+            if (c.getType().equals(this.getType()) && !c.getState().equals(CellState.CLEARING)) {
+                c.clear();
+            }
+        }
+        setColor(CellType.EMPTY);
     }
 
     public void debugPrint() {
