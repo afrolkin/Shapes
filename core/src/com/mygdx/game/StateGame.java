@@ -28,7 +28,6 @@ public class StateGame extends State{
         float x, y = 0;
         float width = mWidth;
         float height = mHeight;
-        Cell.CellType color;
         public boolean started = false;
         ShapeRenderer renderer = parent.getShapeRenderer();
 
@@ -37,7 +36,6 @@ public class StateGame extends State{
             this.y = y;
             height = 30;
             width = 30;
-            color = Cell.CellType.EMPTY;
             setBounds(x - width, y - width, 2 * width, 2 * height);
             addListener(new InputListener(){
                 public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -45,6 +43,7 @@ public class StateGame extends State{
                 }
                 public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                     grid.regenerate();
+                    grid.debugDraw();
                 }
             });
         }
@@ -52,7 +51,7 @@ public class StateGame extends State{
         @Override
         public void draw(Batch batch, float alpha) {
             renderer.begin(ShapeRenderer.ShapeType.Filled);
-            Color c = ShapesColor.TEMP_CLEAR;
+            Color c = ShapesColor.PURPLE;
             int radius = (int)height;
             renderer.setColor(c);
             // fix this
@@ -83,14 +82,13 @@ public class StateGame extends State{
                 public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                     ((ShapeActor)event.getTarget()).started = true;
                     ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.FLASHING);
-                    System.out.println(" hi");
-
                     return true;
                 }
                 public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                     ((ShapeActor)event.getTarget()).started = false;
                     ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.IDLE);
                     ((ShapeActor)event.getTarget()).cell.clear();
+                    grid.shiftCellsDown();
                 }
             });
         }
@@ -140,6 +138,7 @@ public class StateGame extends State{
 
         grid = new Grid();
         grid.generate();
+        grid.debugDraw();
 
         init();
     }
@@ -173,8 +172,8 @@ public class StateGame extends State{
 
         // TODO: make this dynamic or something
         int tempSpacing = 120;
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
                 if (grid.getCell(x,y) != null) {
                     // draw the cells
                     /*
@@ -198,7 +197,7 @@ public class StateGame extends State{
                     renderer.circle(x * 70 + tempSpacing - 240, y * 80 + tempSpacing - 200, radius);
                     renderer.end();
                     */
-                    ShapeActor s = new ShapeActor(x * tempSpacing + 200, y * tempSpacing + 700, grid.getCell(x,y).getType(), grid.getCell(x,y));
+                    ShapeActor s = new ShapeActor(x * tempSpacing + 200, 1920 - 400 - y * tempSpacing, grid.getCell(x,y).getType(), grid.getCell(x,y));
                     s.setTouchable(Touchable.enabled);
                     parent.getStage().addActor(s);
                     //s.draw();

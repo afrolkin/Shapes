@@ -10,7 +10,9 @@ public class ShapesColor {
     public static final Color BLUE = parseColor("2196F3");
     public static final Color YELLOW = parseColor("FFEB3B");
     public static final Color BACKGROUND = parseColor("EEEEEE");
-    public static final Color TEMP_CLEAR = parseColor("9C27B0"); //purple
+    public static final Color PURPLE = parseColor("9C27B0"); //purple
+    public static final Color TEMP_CLEAR = parseColor("EEEEEE");
+
 
     // Convert HEX to RGBA
     public static Color parseColor(String hex) {
