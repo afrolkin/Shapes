@@ -24,6 +24,7 @@ public class Cell {
         GREEN,
         YELLOW,
         EMPTY,
+        TOP
     }
 
     public static enum CellState {
@@ -54,6 +55,7 @@ public class Cell {
 
     public CellState getState() { return cellState; }
 
+    // TODO: write a function like this for all cell types (and states?)
     public boolean isEmpty() {
         return cellType == CellType.EMPTY;
     }
@@ -105,6 +107,9 @@ public class Cell {
                 break;
             case EMPTY:
                 printText = "E";
+                break;
+            case TOP:
+                printText = "T";
                 break;
         }
 

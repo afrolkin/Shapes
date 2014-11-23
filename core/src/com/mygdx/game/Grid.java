@@ -9,36 +9,27 @@ import java.util.Random;
  */
 public class Grid {
     private Cell[][] cells;
+    Random mRandom;
 
     // TODO: Singleton pattern?
     // TODO: instatiate height/width in constructor/ custom height/width
     private int height = 8;
     private int width = 8;
     public Grid() {
-        cells = new Cell[height][width];
+        mRandom = new Random();
+        cells = new Cell[width][height+1];
     }
 
     public void generate() {
-        for (int y = 0; y < height; y++) {
+        for (int y = height; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
-                // TODO: fix randomization
-                Random rn = new Random();
-                Cell.CellType type = Cell.CellType.RED;
-                int n = rn.nextInt(4000);
-                if (n < 1000){
-                    type = Cell.CellType.BLUE;
+                if (y == height) {
+                    cells[x][y] = new Cell(x, y, Cell.CellType.TOP);
+                } else {
+                    Cell.CellType type = generateRandomColor();
+                    cells[x][y] = new Cell(x, y, type);
+                    //System.out.print(String.valueOf(x) + " " + String.valueOf(y) + " " +  type.toString());
                 }
-                else if (n <  2000) {
-                    type = Cell.CellType.GREEN;
-                }
-                else if (n < 3000) {
-                    type = Cell.CellType.RED;
-                }
-                else if (n < 4000) {
-                    type = Cell.CellType.YELLOW;
-                }
-
-                cells[x][y] = new Cell(x, y, type);
             }
         }
         initNeighbours();
@@ -47,22 +38,7 @@ public class Grid {
     public void regenerate() {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                // TODO: fix randomization
-                Random rn = new Random();
-                Cell.CellType type = Cell.CellType.RED;
-                int n = rn.nextInt(4000);
-                if (n < 1000){
-                    type = Cell.CellType.BLUE;
-                }
-                else if (n <  2000) {
-                    type = Cell.CellType.GREEN;
-                }
-                else if (n < 3000) {
-                    type = Cell.CellType.RED;
-                }
-                else if (n < 4000) {
-                    type = Cell.CellType.YELLOW;
-                }
+                Cell.CellType type = generateRandomColor();
 
                 cells[x][y].setColor(type);
                 cells[x][y].setState(Cell.CellState.IDLE);
@@ -82,15 +58,17 @@ public class Grid {
     //      for each cell in this list, translate the cells down using the displacement
     //  do this for the rest of the list
     // fill in the blank spots with random blocks
-    // TODO: generate one extra row at he top that isn't visible to the user to take care of cases where there are no "non-fixed" cells but you still have to fill in with random cells
+    // TODO: generate one extra row at he top that isn't visible to the user to take care of cases where there are no "non-fixed" cells but you still have to fill in with random cells?
+    // TODO: this means that the grid must be changed - instead of 0 - 7 height, it must be 7 - 0 height, and the 8th row must be this extra row to avoid refactoring the code
+    //
     public void shiftCellsDown() {
         List<Cell> nonFixedCells = new ArrayList<Cell>();
         // traverse grid from left to right
         for (int x = 0; x < width; x++) {
             // ignore bottom most row
-            for (int y = height - 2; y >= 0; y--) {
+            for (int y = 1 ; y <= height; y++) {
                 Cell c = getCell(x, y);
-                Cell belowC = getCell(x, y + 1);
+                Cell belowC = getCell(x, y - 1);
                 if (!c.getState().equals(Cell.CellState.CLEARING) && belowC.getState().equals(Cell.CellState.CLEARING)) {
                     nonFixedCells.add(c);
                 }
@@ -124,18 +102,18 @@ public class Grid {
             boolean generate = false;
 
             // need to generate extra blocks since the top most block needs to be shifted
-            if (y == 0) {
+            if (y == height - 1 || c.getType().equals(Cell.CellType.TOP)) {
                 generate = true;
             }
             // form the "column" to shift
             // dont need to check if c is in the top row
             // continue generating row until y reaches the top row or the cell above is empty
-            while (y != 0 && y - i >= 0 && !getCell(x, y - i).getState().equals(Cell.CellState.CLEARING)) {
+            while (y != 0 && y + i <= height - 1 && !getCell(x, y + i).getState().equals(Cell.CellState.CLEARING)) {
                 // need to generate extra blocks since the top most block needs to be shifted
-                if (y - i == 0) {
+                if (y + i == height - 1) {
                     generate = true;
                 }
-                column.add(getCell(x, y - i));
+                column.add(getCell(x, y + i));
                 i++;
             }
             // the amount to move this column down
@@ -159,7 +137,7 @@ public class Grid {
         int y = c.getY();
         int x = c.getX();
 
-        while (y != height && y + emptyRows+1 < height && getCell(x, y+emptyRows+1).getState().equals(Cell.CellState.CLEARING)) {
+        while (y != 0 && y - emptyRows-1 >= 0 && getCell(x, y-emptyRows-1).getState().equals(Cell.CellState.CLEARING)) {
             emptyRows++;
         }
         return emptyRows;
@@ -168,11 +146,16 @@ public class Grid {
     // cells contains the cells of the column to shift down
     private void shiftColumn(List<Cell> cells, int displacement, boolean generate) {
         for (Cell i : cells) {
-            getCell(i.getX(), i.getY() + displacement).setColor(i.getType());
-            getCell(i.getX(), i.getY() + displacement).setState(i.getState());
-            // might need to change the following two lines
-            i.setColor(Cell.CellType.EMPTY);
-            i.setState(Cell.CellState.CLEARING);
+            if (!i.getType().equals(Cell.CellType.TOP)) {
+                getCell(i.getX(), i.getY() - displacement).setColor(i.getType());
+                getCell(i.getX(), i.getY() - displacement).setState(i.getState());
+                // might need to change the following two lines
+                i.setColor(Cell.CellType.EMPTY);
+                i.setState(Cell.CellState.CLEARING);
+            } else { // top cell
+                getCell(i.getX(), i.getY() - displacement).setColor(generateRandomColor());
+                getCell(i.getX(), i.getY() - displacement).setState(Cell.CellState.IDLE);
+            }
         }
 
         // need to generate random blocks to fill empty spaces
@@ -180,30 +163,35 @@ public class Grid {
         if (generate) {
             int numBlocksToCreate = displacement;
             for (int j = 1; j <= numBlocksToCreate; j++) {
-                Random rn = new Random();
-                // TODO: fix randomization
-                Cell.CellType type = Cell.CellType.RED;
-                int n = rn.nextInt(4000);
-                if (n < 1000){
-                    type = Cell.CellType.BLUE;
+                Cell.CellType type = generateRandomColor();
+                if (!getCell(cells.get(0).getX(), cells.get(cells.size() - 1).getY() - displacement + j).getType().equals(Cell.CellType.TOP)) {
+                    getCell(cells.get(0).getX(), cells.get(cells.size() - 1).getY() - displacement + j).setColor(type);
+                    getCell(cells.get(0).getX(), cells.get(cells.size() - 1).getY() - displacement + j).setState(Cell.CellState.IDLE);
                 }
-                else if (n <  2000) {
-                    type = Cell.CellType.GREEN;
-                }
-                else if (n < 3000) {
-                    type = Cell.CellType.RED;
-                }
-                else if (n < 4000) {
-                    type = Cell.CellType.YELLOW;
-                }
-                getCell(cells.get(0).getX(), cells.get(cells.size() - 1).getY() + displacement - j).setColor(type);
-                getCell(cells.get(0).getX(), cells.get(cells.size() - 1).getY() + displacement - j).setState(Cell.CellState.IDLE);
             }
         }
     }
 
+    private Cell.CellType generateRandomColor() {
+        Cell.CellType type = Cell.CellType.RED;
+        int n = mRandom.nextInt(4);
+        if (n < 1){
+            type = Cell.CellType.BLUE;
+        }
+        else if (n <  2) {
+            type = Cell.CellType.GREEN;
+        }
+        else if (n < 3) {
+            type = Cell.CellType.RED;
+        }
+        else if (n < 4) {
+            type = Cell.CellType.YELLOW;
+        }
+        return type;
+    }
+
     private void initNeighbours() {
-        for (int y = 0; y < height; y++) {
+        for (int y = height - 1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
                 Cell c = getCell(x, y);
                 // also check if -1
@@ -235,7 +223,7 @@ public class Grid {
     public void debugDraw() {
         if (cells[1][1] != null) {
             System.out.println("DEBUG GRID");
-            for (int y = 0 ; y < height; y++) {
+            for (int y = height ; y >= 0; y--) {
                 System.out.print(y + " ");
                 for (int x = 0; x < width; x++) {
                     cells[x][y].debugPrint();

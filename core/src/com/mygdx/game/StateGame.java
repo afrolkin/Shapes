@@ -89,6 +89,7 @@ public class StateGame extends State{
                     ((ShapeActor)event.getTarget()).cell.notifyNeighbours(Cell.CellState.IDLE);
                     ((ShapeActor)event.getTarget()).cell.clear();
                     grid.shiftCellsDown();
+                    grid.debugDraw();
                 }
             });
         }
@@ -109,6 +110,8 @@ public class StateGame extends State{
                 c = ShapesColor.GREEN;
             } else if (color == Cell.CellType.EMPTY) {
                 c = ShapesColor.TEMP_CLEAR;
+            } else if (color == Cell.CellType.TOP) {
+                c = ShapesColor.PURPLE;
             }
             renderer.setColor(c);
             // fix this
@@ -172,7 +175,7 @@ public class StateGame extends State{
 
         // TODO: make this dynamic or something
         int tempSpacing = 120;
-        for (int y = 0; y < 8; y++) {
+        for (int y = 8 - 1; y >= 0; y--) {
             for (int x = 0; x < 8; x++) {
                 if (grid.getCell(x,y) != null) {
                     // draw the cells
@@ -197,7 +200,7 @@ public class StateGame extends State{
                     renderer.circle(x * 70 + tempSpacing - 240, y * 80 + tempSpacing - 200, radius);
                     renderer.end();
                     */
-                    ShapeActor s = new ShapeActor(x * tempSpacing + 200, 1920 - 400 - y * tempSpacing, grid.getCell(x,y).getType(), grid.getCell(x,y));
+                    ShapeActor s = new ShapeActor(x * tempSpacing + 200, y * tempSpacing + 700, grid.getCell(x,y).getType(), grid.getCell(x,y));
                     s.setTouchable(Touchable.enabled);
                     parent.getStage().addActor(s);
                     //s.draw();
