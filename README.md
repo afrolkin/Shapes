@@ -1,7 +1,6 @@
 # Shapes
 
 To run the app, import the project into Android Studio and run. 
-Alternatively, just push the apk in the root directory to the device.
 
 This is currently a WIP game, so expect MANY bugs and issues.
 
